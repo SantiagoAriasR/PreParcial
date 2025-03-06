@@ -33,14 +33,16 @@ public class Equipo {
     // Funciones
 
     // Funcion requerimineto 1
-    public LinkedList<Jugador> jugadoresDespedidos(){
+    public LinkedList<Jugador> obtenerListaJugadoresDespedidos() {
         LinkedList<Jugador> jugadoresEliminados = new LinkedList<>();
         for(Jugador jugador : listaJugadores){
             if(jugador.getCalificacion()<=3){
                 jugadoresEliminados.add(jugador);
-                listaJugadores.remove(jugador);
             }
         }
+
+        listaJugadores.removeAll(jugadoresEliminados);
+
         return jugadoresEliminados;
     }
 
@@ -58,7 +60,7 @@ public class Equipo {
 
     // Funcion retornar jugador menor calificacion
     public Jugador jugadorMenorCalificacion(Posicion posicion){
-        float calificacionMenor = listaJugadores.getLast().getCalificacion();
+        float calificacionMenor = Float.MAX_VALUE;
         Jugador jugadorMenorCalificacion = null;
         for(Jugador jugador : listaJugadores){
             if(jugador.getPosJuego().equals(posicion) && jugador.getCalificacion()<calificacionMenor){
@@ -66,6 +68,7 @@ public class Equipo {
                 jugadorMenorCalificacion = jugador;
             }
         }
+        System.out.println(calificacionMenor);
         return jugadorMenorCalificacion;
     }
 
@@ -84,6 +87,7 @@ public class Equipo {
         int camiseta = 0;
         while (!bandera){
             camiseta = (int) (Math.random() * 40) + 1;
+            if(listaJugadores.isEmpty()) bandera = true;
             for (Jugador jugador : listaJugadores){
                 if (jugador.getNumCamiseta()==camiseta){
                     break;
@@ -98,16 +102,23 @@ public class Equipo {
 
 
     // Contratar jugador
-    public Jugador contratarJugador(String nombre, float salario, float calificacion, Posicion posJuego, LocalDate fechaContratacion) {
+    public Jugador contratarJugador(String nombre, float salario, float calificacion, Posicion posJuego, LocalDate fechaContratacion) throws Exception{
+
+        if(nombre.isEmpty()) throw new Exception("El nombre es obligatorio");
+
         Jugador jugador  = new Jugador(nombre,salario,numeroCamisetaAleatorio(),calificacion,posJuego,fechaContratacion);
-        if(contarJugadoresPosicion(jugador.getPosJuego()) < 3 && salarioDisponible(jugador)){
-            listaJugadores.add(jugador);
-        } else {
-            Jugador peor = jugadorMenorCalificacion(jugador.getPosJuego());
-            if(peor.getCalificacion()<jugador.getCalificacion() && salarioDisponible(jugador)){
+        if(salarioDisponible(jugador)) {
+            if (contarJugadoresPosicion(jugador.getPosJuego()) < 3) {
                 listaJugadores.add(jugador);
-                listaJugadores.remove(peor);
+            } else {
+                Jugador peor = jugadorMenorCalificacion(jugador.getPosJuego());
+                if (peor.getCalificacion() < jugador.getCalificacion() ) {
+                    listaJugadores.add(jugador);
+                    listaJugadores.remove(peor);
+                }
             }
+        }else {
+            throw new Exception("No hay dinerp sufiente para contratar jugadores");
         }
         return jugador;
     }
@@ -158,8 +169,7 @@ public class Equipo {
     // Calcular tiempo jugador
     public int calcularTiempoContratacion(Jugador jugador){
         Period diferencia = Period.between(jugador.getFechaContratacion(), LocalDate.now());
-        int años = diferencia.getYears();
-        return años;
+        return diferencia.getYears();
     }
 
     // Rebajar Sueldos jugadores mayor 2 años

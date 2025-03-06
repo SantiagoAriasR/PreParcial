@@ -2,26 +2,53 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.LinkedList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class testMetodo {
+
     @Test
-    public void validarMetodo(){
+    public void contratarJuagadorTest(){
         Equipo equipo = new Equipo();
-        Jugador jugador1 = equipo.contratarJugador("Juliana", 3, 2, Posicion.ARQ, LocalDate.now());
-        Jugador jugador2 = equipo.contratarJugador("Laura", 5, 3, Posicion.DEF, LocalDate.now());
-        Jugador jugador3 = equipo.contratarJugador("Sara", 1, 6, Posicion.DEL, LocalDate.now());
-        Jugador jugador4 = equipo.contratarJugador("Arias", 0, 1, Posicion.ARQ, LocalDate.now());
-
-        LinkedList<Jugador> echados = equipo.jugadoresDespedidos();
-        int echadosSize = echados.size();
-        LinkedList<Jugador> esperado = new LinkedList<>();
-        int esperadoSize = esperado.size();
-        esperado.add(jugador1);
-        esperado.add(jugador2);
-        esperado.add(jugador4);
-
-        assertEquals(esperadoSize, echadosSize);
+        assertThrows(Exception.class, () -> {
+            equipo.contratarJugador("Juliana", 3000, 2, Posicion.ARQ, LocalDate.now());
+        } );
     }
+
+    @Test
+    public void contratarJuagador2Test(){
+        Equipo equipo = new Equipo();
+        assertThrows(Exception.class, () -> {
+            equipo.contratarJugador("Juliana", 3000, 2, Posicion.ARQ, LocalDate.now());
+        } );
+    }
+
+    @Test
+    public void despedirJugadoresTest() throws Exception{
+        Equipo equipo = new Equipo();
+
+        equipo.contratarJugador("Juliana", 2, 2, Posicion.ARQ, LocalDate.now());
+        equipo.contratarJugador("Juliana", 30, 5, Posicion.DEF, LocalDate.now());
+        equipo.contratarJugador("Juliana", 30, 2, Posicion.ARQ, LocalDate.now());
+
+        List<Jugador> jugadorList = equipo.obtenerListaJugadoresDespedidos();
+        assertEquals(2, jugadorList.size());
+    }
+
+    @Test
+    public void calcularPorcentajeJugadoresTest() throws Exception{
+        Equipo equipo = new Equipo();
+
+        equipo.contratarJugador("Juliana", 2, 2, Posicion.ARQ, LocalDate.now());
+        equipo.contratarJugador("Juliana", 30, 5, Posicion.DEF, LocalDate.now());
+        equipo.contratarJugador("Juliana", 30, 2, Posicion.ARQ, LocalDate.now());
+
+        PorcentajeSalario porcentajeSalario = equipo.calcularPorcentajeSalarios();
+        assertEquals(0, porcentajeSalario.getPorcentajeSalarioMedioCam());
+        assertEquals(0, porcentajeSalario.getPorcentajeSalarioDel());
+        assertEquals(30.0f/62.0f * 100, porcentajeSalario.getPorcentajeSalarioDef());
+        assertEquals(32.0f/62.0f * 100, porcentajeSalario.getPorcentajeSalarioArq());
+    }
+
 }
